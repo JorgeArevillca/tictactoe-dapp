@@ -1,6 +1,8 @@
 import React from 'react'
 import { render } from 'react-dom'
 
-import Game from 'components/Game'
+import Page from 'components/Page'
 
-render(<Game />, document.getElementById("root"))
+import 'assets/scss/style.scss'
+
+render(<Page />, document.getElementById("root"))

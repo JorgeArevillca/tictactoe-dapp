@@ -33,7 +33,7 @@ module.exports = {
         loader: 'file-loader?hash=sha512&digest=hex&name=img/[hash].[ext]',
       },
       {
-        test: /\.(less|css)$/,
+        test: /\.(scss|css)$/,
         use: [
           {
             loader: 'style-loader',
@@ -47,7 +47,7 @@ module.exports = {
               sourceMap: true,
             },
           },
-          { loader: 'less-loader', options: { strictMath: true } },
+          { loader: 'sass-loader', options: { strictMath: true } },
         ],
       },
       {

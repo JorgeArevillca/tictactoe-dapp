@@ -1,6 +1,8 @@
 {
-  "presets": [ "react", "env" ],
+  "presets": [ "react", "env"],
   "plugins": [
-    "react-hot-loader/babel"
+    "transform-runtime",
+    "react-hot-loader/babel",
+    "transform-object-rest-spread"
   ]
 }
