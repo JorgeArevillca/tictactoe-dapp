@@ -23,6 +23,20 @@ contract TicTacToe {
     challenger = msg.sender;
   }
 
+  function joinAndStartGame() public {
+    require(msg.sender != challenger);
+    require(opponent == 0);
+
+    opponent = msg.sender;
+
+    bool boolOutcome = randomBool();
+
+    if (boolOutcome) 
+      currentTurn = msg.sender;
+    else
+      currentTurn = opponent;
+  }
+
   function playerMove (uint x, uint y) public {
     require(msg.sender == address(currentTurn));
 
@@ -49,5 +63,17 @@ contract TicTacToe {
 
     depositBalances[currentTurn] = 0;
     currentTurn.transfer(amount);
+  }
+
+  function randomBool() constant public returns (bool) {
+    uint256 r1 = uint256(block.blockhash(block.number-1));
+    uint256 r2 = uint256(block.blockhash(block.number-2));
+
+    uint256 result;
+    assembly {
+        result := xor(r1, r2)
+    }
+
+    return result % 2 == 0;
   }
 }
