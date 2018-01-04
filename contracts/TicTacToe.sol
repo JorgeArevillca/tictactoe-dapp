@@ -11,8 +11,9 @@ contract TicTacToe {
   FieldStates[8] field;
 
   address public currentTurn;
+  uint public timeBetweenTurns = now;
 
-  function set (uint x, uint y) public {
+  function playerMove (uint x, uint y) public {
     require(msg.sender == address(currentTurn));
 
     uint position = (x % 3) + y;
@@ -24,5 +25,7 @@ contract TicTacToe {
       field[position] = FieldStates.Owner;
       currentTurn = address(opponent);
     }
+
+    timeBetweenTurns = now;
   }
 }
