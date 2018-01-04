@@ -45,7 +45,9 @@ contract TicTacToe {
     require(now - timeAtLastTurn > 1 hours);
     require(msg.sender != currentTurn);
 
-    depositBalances[currentTurn] = 0
-    depositBalance[msg.sender] += 
+    uint amount = depositBalances[currentTurn];
+
+    depositBalances[currentTurn] = 0;
+    currentTurn.transfer(amount);
   }
 }
