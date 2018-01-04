@@ -3,7 +3,7 @@ pragma solidity ^0.4.2;
 /// @title TicTacToe Game Contract
 contract TicTacToe {
   address public opponent;
-  address public challenger = msg.sender;
+  address public challenger;
 
   ///@dev mapping of user address to deposit balance
   ///@dev depositBalances[0x123123123] = 1000000
@@ -17,6 +17,11 @@ contract TicTacToe {
   address public currentTurn;
   ///@dev save time of users' turn
   uint public timeAtLastTurn = now;
+
+  ///@dev CONSTRUCTOR
+  function TicTacToe() public {
+    challenger = msg.sender;
+  }
 
   function playerMove (uint x, uint y) public {
     require(msg.sender == address(currentTurn));
@@ -35,10 +40,12 @@ contract TicTacToe {
   }
 
   function lateTurnCancelGameReturnDeposit() public {
-    ///@dev if time is greater than an hour, end game
+    ///@dev if time is less than an hour, revert
     ///@dev 1000000<now> - 800000<timeAtLastTurn> > 3600 
-    require(now - timeBetweenTurns > 1 hours)
+    require(now - timeAtLastTurn > 1 hours);
+    require(msg.sender != currentTurn);
 
-    
+    depositBalances[currentTurn] = 0
+    depositBalance[msg.sender] += 
   }
 }
