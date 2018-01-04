@@ -8,20 +8,21 @@ contract TicTacToe {
   enum FieldStates { None, Owner, Opponent }
   FieldStates constant DEFAULT_STATE = FieldStates.None;
 
-  FieldStates[2][] field;
+  FieldStates[8] field;
 
   address public currentTurn;
 
   function set (uint x, uint y) public {
     require(msg.sender == address(currentTurn));
 
+    uint position = (x % 3) + y;
+
     if (address(currentTurn) == address(opponent)) {
-      field[x][y] = FieldStates.Opponent;
+      field[position] = FieldStates.Opponent;
       currentTurn = address(challenger);
     } else {
-      field[x][y] = FieldStates.Owner;
+      field[position] = FieldStates.Owner;
       currentTurn = address(opponent);
     }
-    
   }
 }
