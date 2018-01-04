@@ -5,6 +5,10 @@ contract TicTacToe {
   address public opponent;
   address public challenger = msg.sender;
 
+  ///@dev mapping of user address to deposit balance
+  ///@dev depositBalances[0x123123123] = 1000000
+  mapping (address => uint ) public depositBalances; 
+
   enum FieldStates { None, Owner, Opponent }
   FieldStates constant DEFAULT_STATE = FieldStates.None;
 
