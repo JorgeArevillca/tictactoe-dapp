@@ -15,7 +15,8 @@ contract TicTacToe {
   FieldStates[8] field;
 
   address public currentTurn;
-  uint public timeBetweenTurns = now;
+  ///@dev save time of users' turn
+  uint public timeAtLastTurn = now;
 
   function playerMove (uint x, uint y) public {
     require(msg.sender == address(currentTurn));
@@ -29,7 +30,15 @@ contract TicTacToe {
       field[position] = FieldStates.Owner;
       currentTurn = address(opponent);
     }
+    ///@dev save last users finished move time
+    timeAtLastTurn = now;
+  }
 
-    timeBetweenTurns = now;
+  function lateTurnCancelGameReturnDeposit() public {
+    ///@dev if time is greater than an hour, end game
+    ///@dev 1000000<now> - 800000<timeAtLastTurn> > 3600 
+    require(now - timeBetweenTurns > 1 hours)
+
+    
   }
 }
