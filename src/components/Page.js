@@ -6,7 +6,7 @@ import Header from './Header'
 import styles from './Page.scss'
 
 const Page = () => 
-  <div>
+  <div className={styles.page}>
     <Header />
     <Game />
   </div>

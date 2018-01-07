@@ -40,6 +40,10 @@ module.exports = {
           },
           {
             loader: 'css-loader',
+            options: {
+              modules: true,
+              localIdentName: '[name]__[local]___[hash:base64:5]'
+            }
           },
           {
             loader: 'postcss-loader',
@@ -47,7 +51,7 @@ module.exports = {
               sourceMap: true,
             },
           },
-          { loader: 'sass-loader', options: { strictMath: true } },
+          { loader: 'sass-loader' },
         ],
       },
       {
