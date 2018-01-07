@@ -1,9 +1,9 @@
-import { TTT } from 'api'
+import { getTTTContractInstance } from 'api'
 
 export const eventWatcher = async (eventName) => {
   if(!eventName) throw new Error('Event does not exist')
 
-  const ttt = await TTT()
+  const ttt = await getTTTContractInstance()
 
   console.log(ttt)
 

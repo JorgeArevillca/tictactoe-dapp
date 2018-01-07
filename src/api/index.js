@@ -5,8 +5,10 @@ import { eventWatcher } from './events'
 
 // save instance
 let ttt
+let tttfactory
 // call instance
-export const TTT = async () => ttt ? ttt : await setUpContracts()
+export const getTTTContractInstance = async () => ttt ? ttt : await setupContract('TicTacToe')
+export const getTTTFactoryContractInstance = async () => tttfactory ? tttfactory : await setupContract('TicTacToeFactory')
 
 export const windowLoaded = new Promise((accept, reject) => {
   if (typeof window === 'undefined') {
@@ -32,30 +34,41 @@ const getProvider = () => {
   }
 }
 
-const setupWeb3 = async () => {
+let web3Instance
+export const setupWeb3 = async () => {
+  if (web3Instance) {
+    return web3Instance
+  }
+
   await windowLoaded
 
-  return new Web3(getProvider())
+  web3Instance = new Web3(getProvider())
+  return web3Instance
 }
 
-export const setUpContracts = async () => {
-  const TTTArtifact = require('../../build/contracts/TicTacToe.json')
-  const contract = TruffleContract(TTTArtifact)
+export const getContract = async (name) => {
+  const artifact = require(`../../build/contracts/${name}.json`)
+  const contract = TruffleContract(artifact)
+
   try {
     const { currentProvider } = await setupWeb3()
-    console.log(currentProvider)
     const csp = await contract.setProvider(currentProvider)
     
+    return contract
+  } catch (e) {
+    throw new Error(e)
+  }
+}
+
+export const setupContract = async (name) => {
+  const contract = await getContract(name)
+  try {
     ttt = contract.deployed()
     return ttt
 
   } catch (e) {
-    throw new Error (e)
+    throw new Error(e)
   }
 }
 
-module.exports = {
-  eventWatcher,
-  setUpContracts,
-  TTT,
-}
+export const getWeb3 = () => web3Instance
