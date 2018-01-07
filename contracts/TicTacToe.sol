@@ -1,5 +1,7 @@
 pragma solidity ^0.4.2;
 
+import './TicTacToeFactory';
+
 /// @title TicTacToe Game Contract
 contract TicTacToe {
   address public opponent;
@@ -25,6 +27,7 @@ contract TicTacToe {
   ///@dev CONSTRUCTOR
   function TicTacToe(address _owner) public {
     challenger = _owner;
+
 
     GameHasChallenger(true, challenger);
   }
