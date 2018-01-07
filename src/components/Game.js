@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 
-import Block from 'layouts/Block'
+import styles from './Game.scss'
 
 const Game = () =>
-  <Block>
-    hi
-  </Block>
+  <div className={styles.game}>
+    
+  </div>
 
 export default Game

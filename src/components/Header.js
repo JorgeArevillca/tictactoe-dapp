@@ -1,12 +1,9 @@
 import React from 'react'
 
-import Title from 'layouts/Title'
-import Block from 'layouts/Block'
-
 const Header = () => (
-  <Block>
-    <Title>Tic-Tac-Toe</Title>
-  </Block>
+  <div>
+    <h3>Tic-Tac-Toe</h3>
+  </div>
 )
 
 export default Header

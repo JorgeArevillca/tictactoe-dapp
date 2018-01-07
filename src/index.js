@@ -8,8 +8,6 @@ import Page from 'components/Page'
 
 import 'assets/scss/style.scss'
 
-export const TTT 
-
 const setUpContracts = async () => {
   const TTTArtifact = require('../build/contracts/TicTacToe.json')
   const contract = TruffleContract(TTTArtifact)

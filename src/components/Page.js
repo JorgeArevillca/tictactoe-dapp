@@ -3,12 +3,12 @@ import React from 'react'
 import Game from './Game'
 import Header from './Header'
 
-import Block from 'layouts/Block'
+import styles from './Page.scss'
 
 const Page = () => 
-  <Block>
+  <div>
     <Header />
     <Game />
-  </Block>
+  </div>
 
 export default Page
