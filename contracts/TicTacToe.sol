@@ -23,10 +23,10 @@ contract TicTacToe {
   event GameHasChallenger(bool started, address challenger);
 
   ///@dev CONSTRUCTOR
-  function TicTacToe() public {
-    challenger = msg.sender;
+  function TicTacToe(address _owner) public {
+    challenger = _owner;
 
-    GameHasChallenger(true, msg.sender);
+    GameHasChallenger(true, challenger);
   }
 
   function joinAndStartGame() public {
