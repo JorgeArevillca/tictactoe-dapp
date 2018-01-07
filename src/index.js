@@ -8,7 +8,10 @@ import Page from 'components/Page'
 
 import 'assets/scss/style.scss'
 
-let TTT
+// save instance
+let ttt
+// call instance
+export const TTT = () => ttt
 
 export const windowLoaded = new Promise((accept, reject) => {
   if (typeof window === 'undefined') {
@@ -48,7 +51,9 @@ const setUpContracts = async () => {
     console.log(currentProvider)
     const csp = await contract.setProvider(currentProvider)
     
-    TTT = await contract.deployed()
+    ttt = await contract.deployed()
+
+    console.log(TTT())
   } catch (e) {
     throw new Error (e)
   }
