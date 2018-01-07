@@ -18,9 +18,15 @@ contract TicTacToe {
   ///@dev save time of users' turn
   uint public timeAtLastTurn = now;
 
+  ///@dev EVENTS
+  event GameStarted(bool started);
+  event GameHasChallenger(bool started, address challenger);
+
   ///@dev CONSTRUCTOR
   function TicTacToe() public {
     challenger = msg.sender;
+
+    GameHasChallenger(true, msg.sender);
   }
 
   function joinAndStartGame() public {
@@ -35,6 +41,8 @@ contract TicTacToe {
       currentTurn = msg.sender;
     else
       currentTurn = opponent;
+
+    GameStarted(true);
   }
 
   function playerMove (uint x, uint y) public {

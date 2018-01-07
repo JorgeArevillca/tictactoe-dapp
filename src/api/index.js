@@ -1,10 +1,12 @@
 import TC from 'truffle-contract'
 import Web3 from 'web3'
 
+import { eventWatcher } from './events'
+
 // save instance
 let ttt
 // call instance
-export const TTT = () => ttt
+export const TTT = async () => ttt ? ttt : await setUpContracts()
 
 export const windowLoaded = new Promise((accept, reject) => {
   if (typeof window === 'undefined') {
@@ -44,9 +46,16 @@ export const setUpContracts = async () => {
     console.log(currentProvider)
     const csp = await contract.setProvider(currentProvider)
     
-    ttt = await contract.deployed()
+    ttt = contract.deployed()
+    return ttt
 
   } catch (e) {
     throw new Error (e)
   }
+}
+
+module.exports = {
+  eventWatcher,
+  setUpContracts,
+  TTT,
 }
