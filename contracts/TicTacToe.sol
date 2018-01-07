@@ -14,7 +14,7 @@ contract TicTacToe {
   enum FieldStates { None, Owner, Opponent }
   FieldStates constant DEFAULT_STATE = FieldStates.None;
 
-  FieldStates[8] field;
+  FieldStates[8] public field;
 
   address public currentTurn;
   ///@dev save time of users' turn

@@ -117,6 +117,8 @@ class Game extends Component {
       return this.renderMenu()
     }
 
+    console.log(this.contract)
+
     return (
       <div>
         <p>Your game's address is <code>{this.state.gameAddress}</code></p>
