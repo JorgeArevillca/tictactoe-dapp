@@ -5,7 +5,6 @@ import { eventWatcher, TTT } from 'api'
 
 import styles from './Game.scss'
 
-<<<<<<< HEAD
 const STATES = {
   CIRCLE: 'circle',
   CROSS: 'cross',
@@ -36,21 +35,5 @@ const Game = () =>
       <Field state={STATES.EMTPY} />
     </div>
   </div>
-=======
-class Game extends React.Component {
-  
-  async componentWillMount() {
-    await eventWatcher('GameHasChallenger')
-  }
-
-  render() {
-    return (
-      <div className={styles.game}>
-    
-      </div>
-    )
-  }
-}
->>>>>>>  starting TicTacToeFactory and implementing eventWatch
 
 export default Game
