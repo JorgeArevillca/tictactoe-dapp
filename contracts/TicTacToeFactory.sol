@@ -4,12 +4,11 @@ import './TicTacToe.sol';
 
 contract TicTacToeFactory {
 
-  mapping (address => address) tttGame;
-
   event BroadCastTTTAddress(address TTTGame);
 
   function newGame() public returns (address) {
-    tttGame[msg.sender] = new TicTacToe(msg.sender);
-    BroadCastTTTAddress(msg.sender);
+    address newGame = new TicTacToe(msg.sender);
+    BroadCastTTTAddress(newGame);
+    return newGame;
   }
 }
