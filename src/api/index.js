@@ -1,14 +1,14 @@
 import TC from 'truffle-contract'
 import Web3 from 'web3'
 
-import { eventWatcher } from './events'
-
 // save instance
 let ttt
 let tttfactory
 // call instance
 export const getTTTContractInstance = async () => ttt ? ttt : await setupContract('TicTacToe')
 export const getTTTFactoryContractInstance = async () => tttfactory ? tttfactory : await setupContract('TicTacToeFactory')
+
+export const eventWatcher = (contract, event, args) => contract[event](args).watch((err, result) => err ? console.log(err) : console.log(result))
 
 export const windowLoaded = new Promise((accept, reject) => {
   if (typeof window === 'undefined') {
@@ -46,6 +46,7 @@ export const setupWeb3 = async () => {
   return web3Instance
 }
 
+// returns TC wrapped and Provided contract
 export const getContract = async (name) => {
   const artifact = require(`../../build/contracts/${name}.json`)
   const contract = TruffleContract(artifact)
@@ -63,9 +64,9 @@ export const getContract = async (name) => {
 export const setupContract = async (name) => {
   const contract = await getContract(name)
   try {
-    ttt = contract.deployed()
-    return ttt
-
+    const deplContract = contract.deployed()
+    
+    return deplContract
   } catch (e) {
     throw new Error(e)
   }

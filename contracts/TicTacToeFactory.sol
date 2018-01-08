@@ -7,11 +7,8 @@ contract TicTacToeFactory {
   event BroadCastTTTAddress(address TTTGame);
 
   function newGame() public returns (address) {
-    return new TicTacToe(msg.sender);
+    address newGame = new TicTacToe(msg.sender);
+    BroadCastTTTAddress(newGame);
+    return newGame;
   }
-
-  function broadcastNewTTTAddress() public {
-    BroadCastTTTAddress(msg.sender);
-  }
-
 }
