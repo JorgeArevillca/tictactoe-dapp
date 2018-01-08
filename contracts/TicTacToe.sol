@@ -1,7 +1,5 @@
 pragma solidity ^0.4.2;
 
-import './TicTacToeFactory.sol';
-
 /// @title TicTacToe Game Contract
 contract TicTacToe {
   address public opponent;
