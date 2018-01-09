@@ -8,9 +8,9 @@ module.exports = {
       port: 8545,
       network_id: "*"
     },
-    rinkeby: {
-      provider: new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/'),
-      network_id: 42,
-    },
+    // rinkeby: {
+    //   provider: new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/'),
+    //   network_id: 42,
+    // },
   },
 };
