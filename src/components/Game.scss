@@ -15,7 +15,15 @@
   &:first-of-type {
     border-top: none;
   }
+}
 
+.gameFieldRowDisabled {
+  cursor: not-allowed;
+  .gameField {
+    &:hover {
+      background-color: transparent;
+    }
+  }
 }
 
 .gameField {

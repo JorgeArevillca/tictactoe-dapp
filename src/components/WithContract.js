@@ -31,21 +31,29 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
      * @param {*} contractName 
      */
     async loadContract(contractName) {
-      if (!this.contracts[contractName]) {
-        console.log(`Loading Contract: ${contractName}`)
-        this.contracts[contractName] = await getContract(contractName)
-        const deployedInstance = await this.contracts[contractName].deployed()
-
-        if (!this.instances[contractName]) {
-          this.instances[contractName] = {}
+      try {
+        if (!this.contracts[contractName]) {
+          console.log(`Loading Contract: ${contractName}`)
+          this.contracts[contractName] = await getContract(contractName)
+          const deployedInstance = await this.contracts[contractName].deployed()
+  
+          if (!this.instances[contractName]) {
+            this.instances[contractName] = {}
+          }
+  
+          if (!this.deployed[contractName]) {
+            this.deployed[contractName] = {}
+          }
+  
+          this.deployed[contractName] = deployedInstance
+          this.instances[contractName][deployedInstance.address] = deployedInstance
         }
-
-        if (!this.deployed[contractName]) {
-          this.deployed[contractName] = {}
+      } catch (e) {
+        console.warn(`Could not load Contract: ${contractName}`)
+        if (typeof options.onError === 'function') {
+          options.onError(e, this.props)
         }
-
-        this.deployed[contractName] = deployedInstance
-        this.instances[contractName][deployedInstance.address] = deployedInstance
+        throw e
       }
     }
 
@@ -56,15 +64,30 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
      * @param {*} address 
      */
     async loadInstance(contractName, address) {
-      if (!this.instances[contractName] || !this.instances[contractName][address]) {
-        console.log(`Loading Contract Instance: ${contractName}@${address}`)
-        await this.loadContract(contractName)
-
-        const contract = await this.contracts[contractName].at(address)
-        this.instances[contractName][address] = contract
+      try {
+        if (!this.instances[contractName] || !this.instances[contractName][address]) {
+          console.log(`Loading Contract Instance: ${contractName}@${address}`)
+          await this.loadContract(contractName)
+  
+          // need to wrap the .at function because it's not a simple promise
+          const contract = await (new Promise((resolve, reject) => {
+            this.contracts[contractName].at(address).then((inst) => {
+              resolve(inst)
+            }, reject).catch((err) => {
+              reject(err)
+            })
+          }))
+          this.instances[contractName][address] = contract
+        }
+  
+        return this.instances[contractName][address] 
+      } catch (e) {
+        console.warn(`Could not load Contract Instance: ${contractName}@${address}`)
+        if (typeof options.onError === 'function') {
+          options.onError(e, this.props)
+        }
+        throw e
       }
-
-      return this.instances[contractName][address]
     }
 
     /**
@@ -73,17 +96,26 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
      * @param {*} contractName 
      */
     async loadDeployed(contractName) {
-      if (!this.deployed[contractName]) {
-        console.log(`Loading deployed Contract: ${contractName}`)
-        const contract = await this.contracts[contractName].deployed()
-
-        this.deployed[contractName] = contract
-        this.instances[contract.address] = contract
+      try {
+        if (!this.deployed[contractName]) {
+          console.log(`Loading deployed Contract: ${contractName}`)
+          const contract = await this.contracts[contractName].deployed()
+  
+          this.deployed[contractName] = contract
+          this.instances[contract.address] = contract
+        }
+        return this.deployed[contractName][address]
+      } catch (e) {
+        console.warn(`Could not load deployed Contract: ${contractName}`)
+        if (typeof options.onError === 'function') {
+          options.onError(e, this.props)
+        }
+        throw e
       }
-      return this.deployed[contractName][address]
     }
 
-    async componentDidMount() {
+    async fetchContractsFromProps() {
+
       // load contracts from contractNamesOrNames (array or string)
       if (typeof contractNameOrNames === 'object') {
         this.contracts = {}
@@ -108,10 +140,36 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         await promises
       }
 
-      this.setState({
-        hasLoaded: true
-      })
+      // map contract instances to props
+      if (typeof options.mapContractInstancesToProps === 'function') {
+        let instanceMappingProps = {}
 
+        const mappingPromises = Promise.all(Object.keys(this.instances).map((contractName) =>
+          Promise.all(Object.keys(this.instances[contractName]).map(async (address) => {
+            const changes = await options.mapContractInstancesToProps(contractName, this.instances[contractName][address], this.props)
+            if (changes && Object.keys(changes).length) {
+              instanceMappingProps = Object.assign(instanceMappingProps, changes)
+            }
+          }))
+        ))
+
+        await mappingPromises
+        this.instanceMappingProps = instanceMappingProps
+      }
+
+      this.accounts = await getAccounts()
+    }
+
+    async componentDidMount() {
+      try {
+        await this.fetchContractsFromProps()
+
+        this.setState({
+          hasLoaded: true
+        })
+      } catch (e) {
+        // errored, don't interact with state, let userspace handle
+      }
     }
     render() {
       if (!this.state.hasLoaded) {
@@ -119,8 +177,9 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       }
 
       const props = {
+        accounts: this.accounts,
         ...this.props,
-        getAccounts
+        ...this.instanceMappingProps,
       }
 
       props.contracts = { ...this.contracts }

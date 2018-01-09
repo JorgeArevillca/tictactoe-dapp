@@ -5,9 +5,9 @@ import cn from 'classnames'
 import styles from './Game.scss'
 
 const STATES = {
+  EMPTY: 'empty',
   CIRCLE: 'circle',
   CROSS: 'cross',
-  EMPTY: 'empty'
 }
 
 const Field = ({ state = STATES.EMPTY }) => {
@@ -17,154 +17,44 @@ const Field = ({ state = STATES.EMPTY }) => {
 }
 
 class Game extends Component {
-  /*
   constructor(props) {
     super(props)
-    this.handleCreateGame = this.handleCreateGame.bind(this)
-    this.handleManuallyJoinGame = this.handleManuallyJoinGame.bind(this)
-    this.handleChangeJoinAddress = this.handleChangeJoinAddress.bind(this)
-    this.handleClickChangeJoinAddress = this.handleClickChangeJoinAddress.bind(this)
-    this.state = {
-      gameFactoryReady: false,
-      gameAddress: undefined,
-      gamesAvailable: []
-    }
+    this.handleClickField = this.handleClickField.bind(this)
   }
 
-  async componentDidMount() {
-    try {
-      this.web3 = await getWeb3()
-      this.gameFactory = await getTTTFactoryContractInstance()
+  handleClickField() {
 
-      eventWatcher(this.gameFactory, 'BroadCastTTTAddress', {})        
-
-      this.setState({
-        gameFactoryReady: true,
-      })
-    } catch(e) {
-      throw new Error(e)
-    }
   }
 
-  async handleManuallyJoinGame() {
-    const { joinAddress } = this.state
-    try {
-      this.contractClass = await getContract('TicTacToe')
-      this.contract = await this.contractClass.at(joinAddress)
-
-      this.setState({
-        gameAddress: joinAddress,
-        gamesAvailable: this.state.gamesAvailable.filter(games => games != joinAddress),
-      })
-    } catch (e) {
-      console.log("failed to join game", e)
-      alert("invalid game, could not join")
-    }
-  }
-
-  handleChangeJoinAddress(e) {
-    this.setState({
-      joinAddress: e.target.value,
-    })
-  }
-
-  async handleClickChangeJoinAddress(e) {
-    const addr = typeof e.target.innerHTML === 'string' ? e.target.innerHTML : e.target.innerHTML.toString()
-    
-    try {
-      this.contractClass = await getContract('TicTacToe')
-      this.contract = await this.contractClass.at(addr)
-
-      this.setState({
-        gameAddress: addr,
-        gamesAvailable: this.state.gamesAvailable.filter(games => games != addr),
-      })
-    } catch (e) {
-      console.log("failed to join game", e)
-      alert("invalid game, could not join")
-    }
-  }
-
-  async handleCreateGame() {
-    // call contract thing
-    const accounts = await (new Promise((resolve, reject) => {
-      this.web3.eth.getAccounts((err, res) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(res)
-        } 
-      })
-    }))
-    
-    const contract = await this.gameFactory.newGame({ from: accounts[0] })
-    
-    const { receipt: { logs: [ { address } ] } } = contract
-    
-    this.contractClass = await getContract('TicTacToe')
-    this.contract = await this.contractClass.at(address)
-
-    this.setState({
-      gameAddress: address,
-      gamesAvailable: this.state.gamesAvailable.concat(address),
-    })
-  }
-
-  renderOtherGamesMenu() {
-    const hasGames = this.state.gamesAvailable.length
-    return (
-      <div className={styles.gameMenu}>
-        {hasGames ? (
-          <div>
-            <p>Available Games!</p>
-            {this.state.gamesAvailable.map((game) => {
-              return (
-                <div className={styles.gameAvailable} key={game}>
-                  <pre
-                    className={styles.hoverable}
-                    onClick={this.handleClickChangeJoinAddress}
-                  >{game}</pre>
-                </div>
-              )
-            })}
-            <p>{this.state.gameFactoryReady && <button type="button" onClick={this.handleCreateGame}>Create a new Game</button>}</p>
-            <p>Or manually join game (by address): <input type="text" value={this.state.joinAddress || ''} onChange={this.handleChangeJoinAddress} /><button type="button" onClick={this.handleManuallyJoinGame}>Join Game</button></p>
-          </div>
-        ) : (
-          <div>
-            <p>{this.state.gameFactoryReady && <button type="button" onClick={this.handleCreateGame}>Create a new Game</button>}</p>
-            <p>Or manually join game (by address): <input type="text" value={this.state.joinAddress || ''} onChange={this.handleChangeJoinAddress} /><button type="button" onClick={this.handleManuallyJoinGame}>Join Game</button></p>
-          </div>
-        )}
-      </div>
-    )  
-  }
-*/
   render() {
     const gameAddress = this.props.match.params.gameAddress
-    const { instances: { TicTacToe: { [gameAddress]: gameInstance } } } = this.props
-    
+    const { fields, currentTurn, instances: { TicTacToe: { [gameAddress]: gameInstance } } } = this.props
+
+    const fieldArray = [[], [], []]
+    fields.forEach((field, index) => {
+      const x = index % 3
+      const y = Math.floor(index / 3)
+
+      fieldArray[x][y] = field
+    })
+
+    const fieldStates = Object.keys(STATES)
+    const isMyTurn = !!currentTurn
+
     return (
       <div>
         <p>Your game's address is <code>{gameInstance.address}</code></p>
         <div className={styles.game}>
-          <div className={styles.gameFieldRow}>
-            <Field state={STATES.CIRCLE} />
-            <Field state={STATES.CIRCLE} />
-            <Field state={STATES.CIRCLE} />
-          </div>
-          <div className={styles.gameFieldRow}>
-            <Field state={STATES.EMTPY} />
-            <Field state={STATES.CROSS} />
-            <Field state={STATES.EMTPY} />
-          </div>
-          <div className={styles.gameFieldRow}>
-            <Field state={STATES.EMTPY} />
-            <Field state={STATES.EMTPY} />
-            <Field state={STATES.EMTPY} />
-          </div>
+          {fieldArray.map((row, y) => (
+            <div className={cn(styles.gameFieldRow, {
+              [styles.gameFieldRowDisabled]: !isMyTurn
+            })} key={`row_${y}`}>
+              {row.map((fieldState, x) => (
+                <Field x={x} y={y} onClick={this.handleClickField} state={STATES[fieldStates[fieldState]]} key={`cell_${x}`} />
+              ))}
+            </div>
+          ))}
         </div>
-        {/*this.renderOtherGamesMenu()*/}
       </div>
     )
   }
@@ -175,5 +65,24 @@ export default WithContract('TicTacToe', {
     return {
       TicTacToe: [props.match.params.gameAddress]
     }
+  },
+  mapContractInstancesToProps: async (contractName, instance, props) => {
+    const gameAddress = props.match.params.gameAddress
+    if (contractName === 'TicTacToe' && instance.address === gameAddress) {
+      const field = Array(9).fill(0)
+
+      const currentTurn = await instance.currentTurn()
+
+      const fieldsResolvingPromises = Promise.all(field.map(async (_, index) => await instance.field.call(index)))
+      const fields = await fieldsResolvingPromises
+      return {
+        fields: fields.map(field => field.toString()),
+        currentTurn,
+      }
+    }
+  },
+  onError: (error, props) => {
+    //console.error(error)
+    props.history.push('/')
   }
 })(Game)
