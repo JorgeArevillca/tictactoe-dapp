@@ -12,6 +12,7 @@ class Menu extends Component {
     this.handleChangeJoinAddress = this.handleChangeJoinAddress.bind(this)
     this.handleClickChangeJoinAddress = this.handleClickChangeJoinAddress.bind(this)
     this.handleCreateGame = this.handleCreateGame.bind(this)
+    this.handleManuallyJoinGame = this.handleManuallyJoinGame.bind(this)
 
     this.state = {
       joinAddress: '',
@@ -27,19 +28,45 @@ class Menu extends Component {
 
   async handleClickChangeJoinAddress(e) {
     const addr = typeof e.target.innerHTML === 'string' ? e.target.innerHTML : e.target.innerHTML.toString()
+    const { history, contracts: { TicTacToe } } = this.props
     
     try {
-      this.contractClass = await getContract('TicTacToe')
-      this.contract = await this.contractClass.at(addr)
+      const gameInstance = await TicTacToe.at(addr)
 
-      this.setState({
-        gameAddress: addr,
-        gamesAvailable: this.state.gamesAvailable.filter(games => games != addr),
-      })
+      const hasOpponent = await gameInstance.opponent()
+
+      if(!hasOpponent) {
+        if (confirm('Do you want to join this game or spectate?')) {
+          await gameInstance.joinAndStartGame()
+        }
+      }
+
+       history.push(`/${gameInstance.address}`)
     } catch (e) {
       console.log("failed to join game", e)
       alert("invalid game, could not join")
     }
+  }
+
+  async handleManuallyJoinGame(e) {
+    const { history, contracts: { TicTacToe } } = this.props
+    
+    try {
+      const gameInstance = await TicTacToe.at(addr)
+
+      const hasOpponent = await gameInstance.opponent()
+
+      if(!hasOpponent) {
+        if (confirm('Do you want to join this game or spectate?')) {
+          await gameInstance.joinAndStartGame()
+        }
+      }
+
+       history.push(`/${gameInstance.address}`)
+    } catch (e) {
+      console.log("failed to join game", e)
+      alert("invalid game, could not join")
+    }    
   }
 
   async handleCreateGame() {
