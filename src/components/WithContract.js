@@ -1,6 +1,16 @@
 import React, { Component } from 'react'
 import { getContract, setupContract, getAccounts } from 'api'
 
+/**
+ * Higher-Order Component to add Contract Information to a Component. This Component will add the following props:
+ * 
+ * contracts: Classes of Contracts (Constructor)
+ * instances: Instances that were loaded, always the deployed version, additional instances can be loaded at runtime
+ * deployed: Instances of contracts that were deployed to the current network
+ * 
+ * @param {*} contractNameOrNames 
+ * @param {*} options 
+ */
 const WithContract = (contractNameOrNames, options = {}) => (Child) => {
   return class extends Component {
     constructor(props) {
@@ -35,7 +45,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         }
 
         this.deployed[contractName] = deployedInstance
-        this.instances[deployedInstance.address] = deployedInstance
+        this.instances[contractName][deployedInstance.address] = deployedInstance
       }
     }
 
@@ -47,11 +57,11 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
      */
     async loadInstance(contractName, address) {
       if (!this.instances[contractName] || !this.instances[contractName][address]) {
-        console.log(`Loading Instance Contract: ${contractName}@${address}`)
+        console.log(`Loading Contract Instance: ${contractName}@${address}`)
         await this.loadContract(contractName)
 
         const contract = await this.contracts[contractName].at(address)
-        this.instances[address] = contract
+        this.instances[contractName][address] = contract
       }
 
       return this.instances[contractName][address]
@@ -70,7 +80,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         this.deployed[contractName] = contract
         this.instances[contract.address] = contract
       }
-      return this.instadeployednces[contractName][address]
+      return this.deployed[contractName][address]
     }
 
     async componentDidMount() {
@@ -78,26 +88,21 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       if (typeof contractNameOrNames === 'object') {
         this.contracts = {}
         this.instances = {}
-        const promises = contractNameOrNames.map(async (contractName) => this.loadContract(contractName))
+        const promises = contractNameOrNames.map(async (contractName) => await this.loadContract(contractName))
 
         await Promise.all(promises)
 
       } else {
-        this.contracts = {
-          [contractNameOrNames]: await getContract(contractNameOrNames)
-        }
-        this.instances = {
-          [contractNameOrNames]: await this.contracts[contractNameOrNames].deployed()
-        }
+        await this.loadContract(contractNameOrNames)
       }
 
       // load additional instances of contracts from prop function
       if (typeof options.loadInstances === 'function') {
         const contractNamesAndAddreses = options.loadInstances(this.props)
         const promises = Promise.all(Object.keys(contractNamesAndAddreses).map(async (contractName) =>
-          contractNamesAndAddreses[contractName].map(async (address) =>
-            this.loadInstance(contractName, address)
-          )
+          Promise.all(contractNamesAndAddreses[contractName].map(async (address) =>
+            await this.loadInstance(contractName, address)
+          ))
         ))
 
         await promises
@@ -120,6 +125,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
 
       props.contracts = { ...this.contracts }
       props.instances = { ...this.instances }
+      props.deployed = { ...this.deployed }
 
       return <Child {...props}  />
     }

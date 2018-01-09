@@ -43,7 +43,7 @@ class Menu extends Component {
   }
 
   async handleCreateGame() {
-    const { history, instances: { TicTacToeFactory }, contracts: { TicTacToe } } = this.props
+    const { history, deployed: { TicTacToeFactory }, contracts: { TicTacToe } } = this.props
     // call contract thing
     const accounts = await this.props.getAccounts()
     const contract = await TicTacToeFactory.newGame({ from: accounts[0] })

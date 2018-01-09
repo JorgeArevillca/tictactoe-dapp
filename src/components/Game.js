@@ -141,9 +141,12 @@ class Game extends Component {
   }
 */
   render() {
+    const gameAddress = this.props.match.params.gameAddress
+    const { instances: { TicTacToe: { [gameAddress]: gameInstance } } } = this.props
+    
     return (
       <div>
-        <p>Your game's address is <code>{0}</code></p>
+        <p>Your game's address is <code>{gameInstance.address}</code></p>
         <div className={styles.game}>
           <div className={styles.gameFieldRow}>
             <Field state={STATES.CIRCLE} />
