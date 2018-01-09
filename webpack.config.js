@@ -9,7 +9,7 @@ module.exports = {
   entry: ['react-hot-loader/patch', 'index.js'],
   devtool: 'eval-source-map',
   output: {
-    publicPath: '/',
+    publicPath: '',
     path: `${__dirname}/docs`,
     filename: 'bundle.js',
   },
