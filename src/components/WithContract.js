@@ -20,6 +20,8 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       this.instances = {}
       this.deployed = {}
 
+      this.refresh = this.refresh.bind(this)
+
       this.state = {
         hasLoaded: false,
       }
@@ -65,21 +67,22 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
      */
     async loadInstance(contractName, address) {
       try {
-        if (!this.instances[contractName] || !this.instances[contractName][address]) {
+        if(!this.contracts[contractName] || !this.instances[contractName][address]) {
           console.log(`Loading Contract Instance: ${contractName}@${address}`)
           await this.loadContract(contractName)
   
           // need to wrap the .at function because it's not a simple promise
           const contract = await (new Promise((resolve, reject) => {
             this.contracts[contractName].at(address).then((inst) => {
+              console.log(inst)
               resolve(inst)
             }, reject).catch((err) => {
               reject(err)
             })
           }))
-          this.instances[contractName][address] = contract
+          this.instances[contractName][address] = contract  
         }
-  
+
         return this.instances[contractName][address] 
       } catch (e) {
         console.warn(`Could not load Contract Instance: ${contractName}@${address}`)
@@ -115,7 +118,6 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
     }
 
     async fetchContractsFromProps() {
-
       // load contracts from contractNamesOrNames (array or string)
       if (typeof contractNameOrNames === 'object') {
         this.contracts = {}
@@ -128,6 +130,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         await this.loadContract(contractNameOrNames)
       }
 
+      console.log(options)
       // load additional instances of contracts from prop function
       if (typeof options.loadInstances === 'function') {
         const contractNamesAndAddreses = options.loadInstances(this.props)
@@ -147,6 +150,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         const mappingPromises = Promise.all(Object.keys(this.instances).map((contractName) =>
           Promise.all(Object.keys(this.instances[contractName]).map(async (address) => {
             const changes = await options.mapContractInstancesToProps(contractName, this.instances[contractName][address], this.props)
+            console.log(changes)
             if (changes && Object.keys(changes).length) {
               instanceMappingProps = Object.assign(instanceMappingProps, changes)
             }
@@ -171,13 +175,23 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         // errored, don't interact with state, let userspace handle
       }
     }
+
+    async refresh() {
+      console.log("refreshing")
+      await this.fetchContractsFromProps()
+      this.forceUpdate()
+    }
+
     render() {
       if (!this.state.hasLoaded) {
         return <span>Loading...</span>
       }
 
+      console.log("rerendering")
+
       const props = {
         accounts: this.accounts,
+        refresh: this.refresh,
         ...this.props,
         ...this.instanceMappingProps,
       }

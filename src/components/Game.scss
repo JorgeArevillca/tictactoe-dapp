@@ -6,6 +6,17 @@
   flex-direction: column;
 }
 
+.gameDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+
+  .gameField {
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
 .gameFieldRow {
   display: flex;
   height: 100%;
@@ -17,20 +28,13 @@
   }
 }
 
-.gameFieldRowDisabled {
-  cursor: not-allowed;
-  .gameField {
-    &:hover {
-      background-color: transparent;
-    }
-  }
-}
-
 .gameField {
   height: 100%;
   width: 100%;
+  border: none;
   border-right: 1px solid black;
   position: relative;
+  appearance: none;
 
   &:last-of-type {
     border-right: none;

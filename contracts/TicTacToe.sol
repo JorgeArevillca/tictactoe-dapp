@@ -47,10 +47,10 @@ contract TicTacToe {
     GameStarted(true);
   }
 
-  function playerMove (uint x, uint y) public {
+  function playerMove (uint x, uint y) public returns (uint) {
     require(msg.sender == address(currentTurn));
 
-    uint position = (x % 3) + y;
+    uint position = (x % 3) + y * 3;
 
     if (address(currentTurn) == address(opponent)) {
       field[position] = FieldStates.Opponent;
@@ -61,6 +61,8 @@ contract TicTacToe {
     }
     ///@dev save last users finished move time
     timeAtLastTurn = now;
+
+    return position;
   }
 
   function lateTurnCancelGameReturnDeposit() public {
