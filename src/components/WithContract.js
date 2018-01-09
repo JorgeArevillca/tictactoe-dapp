@@ -118,6 +118,8 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
     }
 
     async fetchContractsFromProps() {
+      this.accounts = await getAccounts()
+
       // load contracts from contractNamesOrNames (array or string)
       if (typeof contractNameOrNames === 'object') {
         this.contracts = {}
@@ -160,13 +162,16 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         await mappingPromises
         this.instanceMappingProps = instanceMappingProps
       }
-
-      this.accounts = await getAccounts()
     }
 
     async componentDidMount() {
       try {
         await this.fetchContractsFromProps()
+
+        this.autoReload = setInterval(() => {
+          this.fetchContractsFromProps()
+          this.forceUpdate()
+        }, 1000)
 
         this.setState({
           hasLoaded: true
@@ -174,6 +179,10 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       } catch (e) {
         // errored, don't interact with state, let userspace handle
       }
+    }
+
+    componentWillUnmount() {
+      clearInterval(this.autoReload)
     }
 
     async refresh() {

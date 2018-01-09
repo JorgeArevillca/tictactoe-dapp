@@ -103,7 +103,7 @@ class Game extends Component {
       <div>
         <p>Your game's address is <code>{gameInstance.address}</code></p>
         {hasStarted ? (
-          <p>{isMyTurn ? 'It\'s your turn' : `'It's your opponent's turn: ${currentTurn}`}</p>
+          <p>{isMyTurn ? 'It\'s your turn' : 'It\'s your opponent\'s turn'}</p>
         ) : (
           isInGame ? (
             <p>The game has not started yet. Please wait for an opponent.</p>

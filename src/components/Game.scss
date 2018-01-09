@@ -13,6 +13,11 @@
   .gameField {
     &:hover {
       background-color: transparent;
+      box-shadow: none;
+    }
+
+    &:focus {
+      box-shadow: none;
     }
   }
 }
@@ -35,6 +40,7 @@
   border-right: 1px solid black;
   position: relative;
   appearance: none;
+  -webkit-appearance: none;
 
   &:last-of-type {
     border-right: none;
@@ -42,6 +48,13 @@
 
   &:hover {
     background-color: #ccc;
+    box-shadow: 0px 0px 5px inset;
+    outline: none;
+  }
+
+  &:focus {
+    box-shadow: 0px 0px 5px inset;
+    outline: none;
   }
 }
 
