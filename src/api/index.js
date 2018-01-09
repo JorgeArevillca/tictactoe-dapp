@@ -73,3 +73,14 @@ export const setupContract = async (name) => {
 }
 
 export const getWeb3 = () => web3Instance
+
+export const getAccounts = async () => (new Promise((resolve, reject) => {
+  const web3 = getWeb3()
+  web3.eth.getAccounts((err, res) => {
+    if (err) {
+      reject(err)
+    } else {
+      resolve(res)
+    } 
+  })
+}))

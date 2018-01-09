@@ -6,27 +6,13 @@ import Header from './Header'
 import styles from './Page.scss'
 
 class Page extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      contractLoaded: false
-    }
-  }
-  async componentDidMount() {
-    const ttt = await getTTTContractInstance()
-    this.contractInstance = ttt
-    this.setState({ contractLoaded: true })
-  }
-
   render() {
-    const hasContractAndConnection = this.state.contractLoaded && this.contractInstance
+    const { children } = this.props
+
     return (
       <div className={styles.page}>
         <Header />
-        {hasContractAndConnection ? 
-          <Game contract={this.contractInstance} /> : 
-          <span>Loading Game Contract</span>
-        }
+        {children}
       </div>
     )
   }

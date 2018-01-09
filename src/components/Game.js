@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
-import { getWeb3, getContract, getTTTContractInstance, getTTTFactoryContractInstance } from 'api'
+import WithContract from './WithContract'
 import cn from 'classnames'
-
-import { eventWatcher } from 'api'
 
 import styles from './Game.scss'
 
@@ -19,6 +17,7 @@ const Field = ({ state = STATES.EMPTY }) => {
 }
 
 class Game extends Component {
+  /*
   constructor(props) {
     super(props)
     this.handleCreateGame = this.handleCreateGame.bind(this)
@@ -140,43 +139,11 @@ class Game extends Component {
       </div>
     )  
   }
-
-  renderMenu() {
-    const hasGames = this.state.gamesAvailable.length
-    return (
-      <div className={styles.gameMenu}>
-        <p>Welcome to TicTacToe on the Blockchain. Make sure you're on the Testnet!</p>
-        <hr />
-        {hasGames ? (
-          <div>
-            {this.state.gamesAvailable.map((game) => {
-              return (
-                <div className={styles.gameAvailable} key={game}>
-                  <pre>{JSON.stringify(game)}</pre>
-                </div>
-              )
-            })}
-            <p>{this.state.gameFactoryReady && <button type="button" onClick={this.handleCreateGame}>Create a new Game</button>}</p>
-            <p>Or manually join game (by address): <input type="text" value={this.state.joinAddress || ''} onChange={this.handleChangeJoinAddress} /><button type="button" onClick={this.handleManuallyJoinGame}>Join Game</button></p>
-          </div>
-        ) : (
-          <div>
-            <p>{this.state.gameFactoryReady && <button type="button" onClick={this.handleCreateGame}>Create a new Game</button>}</p>
-            <p>Or manually join game (by address): <input type="text" value={this.state.joinAddress || ''} onChange={this.handleChangeJoinAddress} /><button type="button" onClick={this.handleManuallyJoinGame}>Join Game</button></p>
-          </div>
-        )}
-      </div>
-    )
-  }
-
+*/
   render() {
-    if (!this.state.gameAddress) {
-      return this.renderMenu()
-    }
-
     return (
       <div>
-        <p>Your game's address is <code>{this.state.gameAddress}</code></p>
+        <p>Your game's address is <code>{0}</code></p>
         <div className={styles.game}>
           <div className={styles.gameFieldRow}>
             <Field state={STATES.CIRCLE} />
@@ -194,10 +161,16 @@ class Game extends Component {
             <Field state={STATES.EMTPY} />
           </div>
         </div>
-        {this.renderOtherGamesMenu()}
+        {/*this.renderOtherGamesMenu()*/}
       </div>
     )
   }
 }
 
-export default Game
+export default WithContract('TicTacToe', {
+  loadInstances: (props) => {
+    return {
+      TicTacToe: [props.match.params.gameAddress]
+    }
+  }
+})(Game)
