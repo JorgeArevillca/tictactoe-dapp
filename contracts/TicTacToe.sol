@@ -14,6 +14,7 @@ contract TicTacToe {
 
   FieldStates[9] public field;
 
+  bool public hasStarted;
   address public currentTurn;
   ///@dev save time of users' turn
   uint public timeAtLastTurn = now;
@@ -42,6 +43,7 @@ contract TicTacToe {
     else
       currentTurn = opponent;
 
+    hasStarted = true;
     GameStarted(true);
   }
 

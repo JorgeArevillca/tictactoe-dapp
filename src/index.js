@@ -8,13 +8,13 @@ import Menu from 'components/Menu'
 import Game from 'components/Game'
 
 import { Router, Route, Switch } from 'react-router'
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter } from 'react-router-dom'
 
 render((
-  <BrowserRouter>
+  <HashRouter>
     <Page>
       <Route exact path={'/'} component={Menu} />
       <Route path={'/:gameAddress'} component={Game} />
     </Page>
-  </BrowserRouter>
+  </HashRouter>
 ), document.getElementById("root"))

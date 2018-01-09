@@ -28,7 +28,17 @@ class Game extends Component {
 
   render() {
     const gameAddress = this.props.match.params.gameAddress
-    const { fields, currentTurn, instances: { TicTacToe: { [gameAddress]: gameInstance } } } = this.props
+    const {
+      fields,
+      accounts,
+      currentTurn,
+      hasStarted,
+      instances: {
+        TicTacToe: {
+          [gameAddress]: gameInstance
+        }
+      }
+    } = this.props
 
     const fieldArray = [[], [], []]
     fields.forEach((field, index) => {
@@ -39,11 +49,16 @@ class Game extends Component {
     })
 
     const fieldStates = Object.keys(STATES)
-    const isMyTurn = !!currentTurn
+    const isMyTurn = hasStarted && currentTurn === accounts[0]
 
     return (
       <div>
         <p>Your game's address is <code>{gameInstance.address}</code></p>
+        {hasStarted ? (
+          <p>{isMyTurn ? 'It\'s your turn' : `'It's your opponent's turn: ${currentTurn}`}</p>
+        ) : (
+          <p>The game has not started yet. Please wait for an opponent.</p>
+        )}
         <div className={styles.game}>
           {fieldArray.map((row, y) => (
             <div className={cn(styles.gameFieldRow, {
@@ -72,12 +87,14 @@ export default WithContract('TicTacToe', {
       const field = Array(9).fill(0)
 
       const currentTurn = await instance.currentTurn()
+      const hasStarted = await instance.hasStarted()
 
       const fieldsResolvingPromises = Promise.all(field.map(async (_, index) => await instance.field.call(index)))
       const fields = await fieldsResolvingPromises
       return {
         fields: fields.map(field => field.toString()),
         currentTurn,
+        hasStarted,
       }
     }
   },
