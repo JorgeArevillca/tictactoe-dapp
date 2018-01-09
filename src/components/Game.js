@@ -20,10 +20,24 @@ class Game extends Component {
   constructor(props) {
     super(props)
     this.handleClickField = this.handleClickField.bind(this)
+    this.handleJoinGame = this.handleJoinGame.bind(this)
   }
 
   handleClickField() {
 
+  }
+
+  async handleJoinGame() {
+    const gameAddress = this.props.match.params.gameAddress
+    const {
+      instances: {
+        TicTacToe: {
+          [gameAddress]: gameInstance
+        }
+      }
+    } = this.props
+
+    await gameInstance.joinGameAndStart()
   }
 
   render() {
@@ -33,6 +47,8 @@ class Game extends Component {
       accounts,
       currentTurn,
       hasStarted,
+      opponent,
+      challenger,
       instances: {
         TicTacToe: {
           [gameAddress]: gameInstance
@@ -49,7 +65,10 @@ class Game extends Component {
     })
 
     const fieldStates = Object.keys(STATES)
-    const isMyTurn = hasStarted && currentTurn === accounts[0]
+    const myAccount = accounts[0].toLowerCase()
+    const isMyTurn = hasStarted && currentTurn === myAccount
+    const isInGame = myAccount === opponent || myAccount === challenger
+    const gameIsOpen = !hasStarted
 
     return (
       <div>
@@ -57,7 +76,11 @@ class Game extends Component {
         {hasStarted ? (
           <p>{isMyTurn ? 'It\'s your turn' : `'It's your opponent's turn: ${currentTurn}`}</p>
         ) : (
-          <p>The game has not started yet. Please wait for an opponent.</p>
+          isInGame ? (
+            <p>The game has not started yet. Please wait for an opponent.</p>
+          ) : (
+            <p>There is no opponent. <button type="button" onClick={this.handleJoinGame}>Join as Opponent</button></p>
+          )
         )}
         <div className={styles.game}>
           {fieldArray.map((row, y) => (
@@ -86,15 +109,18 @@ export default WithContract('TicTacToe', {
     if (contractName === 'TicTacToe' && instance.address === gameAddress) {
       const field = Array(9).fill(0)
 
-      const currentTurn = await instance.currentTurn()
-      const hasStarted = await instance.hasStarted()
+      const mapVariables = ['currentTurn', 'hasStarted', 'opponent', 'challenger']
+
+      const callVars = {}
+      await Promise.all(mapVariables.map(async (variable) => {
+        callVars[variable] = await instance[variable].call()
+      }))
 
       const fieldsResolvingPromises = Promise.all(field.map(async (_, index) => await instance.field.call(index)))
       const fields = await fieldsResolvingPromises
       return {
         fields: fields.map(field => field.toString()),
-        currentTurn,
-        hasStarted,
+        ...callVars
       }
     }
   },

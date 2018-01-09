@@ -33,14 +33,6 @@ class Menu extends Component {
     try {
       const gameInstance = await TicTacToe.at(addr)
 
-      const hasOpponent = await gameInstance.opponent()
-
-      if(!hasOpponent) {
-        if (confirm('Do you want to join this game or spectate?')) {
-          await gameInstance.joinAndStartGame()
-        }
-      }
-
        history.push(`/${gameInstance.address}`)
     } catch (e) {
       console.log("failed to join game", e)
@@ -50,17 +42,9 @@ class Menu extends Component {
 
   async handleManuallyJoinGame(e) {
     const { history, contracts: { TicTacToe } } = this.props
-    
+
     try {
-      const gameInstance = await TicTacToe.at(addr)
-
-      const hasOpponent = await gameInstance.opponent()
-
-      if(!hasOpponent) {
-        if (confirm('Do you want to join this game or spectate?')) {
-          await gameInstance.joinAndStartGame()
-        }
-      }
+      const gameInstance = await TicTacToe.at(this.state.joinAddress)
 
        history.push(`/${gameInstance.address}`)
     } catch (e) {
