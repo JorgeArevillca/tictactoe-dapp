@@ -20,6 +20,16 @@ class Menu extends Component {
     }
   }
   
+  // async componentDidMount() {
+  //   const {deployed: { TicTacToeFactory, TicTacToeFactory: { newGame, BroadCastTTTAddress } } } = this.props
+  //   const returnV = await BroadCastTTTAddress()
+  //   returnV.watch((err, resp) => {
+  //     if(err) throw new Error(err)
+
+  //     console.log(resp)
+  //   })
+  // }
+
   handleChangeJoinAddress = (e) => {
     this.setState({
       joinAddress: e.target.value,

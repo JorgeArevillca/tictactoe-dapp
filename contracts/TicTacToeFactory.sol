@@ -9,6 +9,5 @@ contract TicTacToeFactory {
   function newGame() public returns (address) {
     address newGame = new TicTacToe(msg.sender);
     BroadCastTTTAddress(newGame);
-    return newGame;
   }
 }
