@@ -74,7 +74,6 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
           // need to wrap the .at function because it's not a simple promise
           const contract = await (new Promise((resolve, reject) => {
             this.contracts[contractName].at(address).then((inst) => {
-              console.log(inst)
               resolve(inst)
             }, reject).catch((err) => {
               reject(err)
@@ -132,7 +131,6 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         await this.loadContract(contractNameOrNames)
       }
 
-      console.log(options)
       // load additional instances of contracts from prop function
       if (typeof options.loadInstances === 'function') {
         const contractNamesAndAddreses = options.loadInstances(this.props)
@@ -152,7 +150,6 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         const mappingPromises = Promise.all(Object.keys(this.instances).map((contractName) =>
           Promise.all(Object.keys(this.instances[contractName]).map(async (address) => {
             const changes = await options.mapContractInstancesToProps(contractName, this.instances[contractName][address], this.props)
-            console.log(changes)
             if (changes && Object.keys(changes).length) {
               instanceMappingProps = Object.assign(instanceMappingProps, changes)
             }
@@ -186,7 +183,6 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
     }
 
     async refresh() {
-      console.log("refreshing")
       await this.fetchContractsFromProps()
       this.forceUpdate()
     }
@@ -195,8 +191,6 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       if (!this.state.hasLoaded) {
         return <span>Loading...</span>
       }
-
-      console.log("rerendering")
 
       const props = {
         accounts: this.accounts,

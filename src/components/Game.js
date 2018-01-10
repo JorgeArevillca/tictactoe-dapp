@@ -140,14 +140,12 @@ export default WithContract('TicTacToe', {
       const field = Array(9).fill(0)
 
       const mapVariables = ['currentTurn', 'opponent', 'challenger']
-      console.log(mapVariables)
+
       const callVars = {}
       await Promise.all(mapVariables.map(async (variable) => {
-        console.log(variable, await instance[variable]())
         callVars[variable] = await instance[variable]()
       }))
-      console.log("hallo?")
-      console.log("getting variables from", instance, instance.address)
+
       const fieldsResolvingPromises = Promise.all(field.map(async (_, index) => await instance.field(index)))
       const fields = await fieldsResolvingPromises
       return {

@@ -15,6 +15,8 @@ contract TicTacToe {
   FieldStates[9] public field;
 
   bool public hasStarted;
+  bool public hasFinished;
+  address public winner;
   address public currentTurn;
   ///@dev save time of users' turn
   uint public timeAtLastTurn = now;
@@ -49,16 +51,34 @@ contract TicTacToe {
 
   function playerMove (uint x, uint y) public returns (uint) {
     require(msg.sender == address(currentTurn));
+    require(!hasFinished);
 
     uint position = (x % 3) + y * 3;
 
     if (address(currentTurn) == address(opponent)) {
       field[position] = FieldStates.Opponent;
-      currentTurn = address(challenger);
+
+      if (didWin(FieldStates.Opponent)) {
+        hasFinished = true;
+        winner = currentTurn;
+      } else {
+        currentTurn = address(challenger);
+      }
     } else {
       field[position] = FieldStates.Owner;
-      currentTurn = address(opponent);
+      
+      if (didWin(FieldStates.Owner)) {
+        hasFinished = true;
+        winner = currentTurn;
+      } else {
+        currentTurn = address(opponent);
+      }
     }
+
+    if (didTie()) {
+        hasFinished = true;
+    }
+
     ///@dev save last users finished move time
     timeAtLastTurn = now;
 
@@ -87,5 +107,29 @@ contract TicTacToe {
     }
 
     return result % 2 == 0;
+  }
+
+  function didWin(FieldStates goal) public returns (bool) {
+    bool horizontalTop = field[0] == goal && field[1] == goal && field[2] == goal;
+    bool horizontalMiddle = field[3] == goal && field[4] == goal && field[5] == goal;
+    bool horizontalBottom =field[6] == goal && field[7] == goal && field[8] == goal;
+    bool verticalLeft = field[0] == goal && field[3] == goal && field[6] == goal;
+    bool verticalMiddle = field[1] == goal && field[4] == goal && field[7] == goal;
+    bool verticalBottom = field[2] == goal && field[5] == goal && field[8] == goal;
+    
+    bool diagonalTopLeft = field[0] == goal && field[4] == goal && field[8] == goal;
+    bool diagonalTopRight = field[2] == goal && field[4] == goal && field[6] == goal;
+
+    return horizontalTop || horizontalMiddle || horizontalBottom || verticalLeft || verticalMiddle || verticalBottom || diagonalTopLeft || diagonalTopRight;
+  }
+
+  function didTie() public returns (bool) {
+    for(uint256 position = 0; position < 9; position++) {
+      if (field[position] == FieldStates.None) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }
