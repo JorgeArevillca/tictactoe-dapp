@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node_modules/.bin/webpack-dev-server --hot --host 0.0.0.0 --client-log-level info --config webpack.config.js --progress",
     "migrate": "node_modules/.bin/truffle migrate --reset",
+    "test": "truffle test --reset --network development",
     "build": "node_modules/.bin/webpack -p"
   },
   "keywords": [],
@@ -41,6 +42,7 @@
     "react-dom": "^16.2.0",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
+    "truffle": "^4.0.4",
     "truffle-contract": "^3.0.1",
     "truffle-hdwallet-provider": "0.0.3",
     "web3": "^1.0.0-beta.27"

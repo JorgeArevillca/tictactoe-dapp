@@ -7,7 +7,7 @@ let tf
 let tt
 
 contract('DutchExchange', (accounts) => {
-  const [master, seller1, seller2, buyer1] = accounts
+  const [challenger, opponent] = accounts
 
   beforeEach(async () => {
     console.log(`

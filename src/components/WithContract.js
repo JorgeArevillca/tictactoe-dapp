@@ -35,10 +35,11 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
     async loadContract(contractName) {
       try {
         if (!this.contracts[contractName]) {
-          console.log(`Loading Contract: ${contractName}`)
+          console.time('load deployed')
           this.contracts[contractName] = await getContract(contractName)
           const deployedInstance = await this.contracts[contractName].deployed()
-  
+          console.timeEnd('load deployed')
+          
           if (!this.instances[contractName]) {
             this.instances[contractName] = {}
           }
@@ -51,6 +52,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
           this.instances[contractName][deployedInstance.address] = deployedInstance
         }
       } catch (e) {
+        console.error(e)
         console.warn(`Could not load Contract: ${contractName}`)
         if (typeof options.onError === 'function') {
           options.onError(e, this.props)
@@ -69,7 +71,9 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       try {
         if(!this.contracts[contractName] || !this.instances[contractName][address]) {
           console.log(`Loading Contract Instance: ${contractName}@${address}`)
+          console.time('contract load')
           await this.loadContract(contractName)
+          console.timeEnd('contract load')
   
           // need to wrap the .at function because it's not a simple promise
           const contract = await (new Promise((resolve, reject) => {
@@ -134,29 +138,44 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       // load additional instances of contracts from prop function
       if (typeof options.loadInstances === 'function') {
         const contractNamesAndAddreses = options.loadInstances(this.props)
-        const promises = Promise.all(Object.keys(contractNamesAndAddreses).map(async (contractName) =>
-          Promise.all(contractNamesAndAddreses[contractName].map(async (address) =>
-            await this.loadInstance(contractName, address)
-          ))
-        ))
+        console.time('load instances')
+        let loadInstancePromises = []
 
-        await promises
+        Object.keys(contractNamesAndAddreses).forEach((contractName) => {
+          const promises = contractNamesAndAddreses[contractName].map(async (address) => {
+            await this.loadInstance(contractName, address)
+          })
+
+          loadInstancePromises = [...loadInstancePromises, ...promises]
+        })
+        console.log(loadInstancePromises)
+        await Promise.all(loadInstancePromises)
+        console.timeEnd('load instances')
       }
+
+      console.time("delay")
+      //await new Promise((resolve) => setTimeout(resolve, 10000))
+      console.timeEnd("delay")
 
       // map contract instances to props
       if (typeof options.mapContractInstancesToProps === 'function') {
         let instanceMappingProps = {}
 
-        const mappingPromises = Promise.all(Object.keys(this.instances).map((contractName) =>
-          Promise.all(Object.keys(this.instances[contractName]).map(async (address) => {
+        let mappingPromises = []
+        console.time('map contract instances to props')
+        Object.keys(this.instances).forEach((contractName) => {
+          const promises = Object.keys(this.instances[contractName]).map(async (address) => {
             const changes = await options.mapContractInstancesToProps(contractName, this.instances[contractName][address], this.props)
             if (changes && Object.keys(changes).length) {
               instanceMappingProps = Object.assign(instanceMappingProps, changes)
             }
-          }))
-        ))
+          })
+          mappingPromises = [...mappingPromises, ...promises]
+        })
+        console.log(mappingPromises)
+        await Promise.all(mappingPromises)
 
-        await mappingPromises
+        console.timeEnd('map contract instances to props')
         this.instanceMappingProps = instanceMappingProps
       }
     }

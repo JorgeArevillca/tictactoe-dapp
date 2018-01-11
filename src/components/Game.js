@@ -10,6 +10,27 @@ const STATES = {
   CROSS: 'cross',
 }
 
+const convertGameFieldToArray = (gameField) => {
+  const field = [
+    [...Array(3).fill(STATES.EMPTY)], 
+    [...Array(3).fill(STATES.EMPTY)], 
+    [...Array(3).fill(STATES.EMPTY)],
+  ]
+  console.log(gameField)
+  field.forEach((column, x) => {
+    column.forEach((_, y) => {
+      const position = (x % 3) + (y * 3)
+      const occupation = gameField >> (position * 2) | 3
+
+      if (occupation > 0) {
+        field[y][x] = occupation === 1 ? STATES.CIRCLE : STATES.CROSS
+      }
+    })
+  })
+
+  return field
+}
+
 const Field = ({ state = STATES.EMPTY, onClick, disabled, x, y }) => {
   return (
     <button disabled={disabled} className={cn(styles.gameField, styles[`gameField--${state}`])} onClick={() => !disabled && onClick(x, y)} />
@@ -36,21 +57,8 @@ class Game extends Component {
       },
       accounts,
     } = this.props
-    console.log(x, y)
-    console.log(gameInstance)
 
-    console.time()
     const playerMove = await gameInstance.playerMove(x, y, { from: accounts[0]})
-    console.timeEnd()
-    console.log(playerMove)
-/*    const c = await TicTacToe.at(gameAddress)*/
-
-    const field = Array(9).fill(0)
-    const fieldsResolvingPromises = Promise.all(field.map(async (_, index) => await gameInstance.field(index)))
-    const fields = await fieldsResolvingPromises
-    
-    console.log(fields.map(f => f.toString()))
-    
     await this.props.refresh()
   }
 
@@ -72,11 +80,13 @@ class Game extends Component {
   render() {
     const gameAddress = this.props.match.params.gameAddress
     const {
-      fields,
+      gameField,
       accounts,
-      currentTurn,
+      currentPlayer,
       opponent,
       challenger,
+      turnCount,
+      winner,
       instances: {
         TicTacToe: {
           [gameAddress]: gameInstance
@@ -84,18 +94,12 @@ class Game extends Component {
       }
     } = this.props
 
-    const fieldArray = [[], [], []]
-    fields.forEach((field, index) => {
-      const x = index % 3
-      const y = Math.floor(index / 3)
+    const fields = convertGameFieldToArray(gameField)
 
-      fieldArray[y][x] = field
-    })
-
-    const hasStarted = parseInt(currentTurn, 16) > 0
+    const hasStarted = parseInt(currentPlayer, 16) > 0
     const fieldStates = Object.keys(STATES)
     const myAccount = accounts[0].toLowerCase()
-    const isMyTurn = hasStarted && currentTurn === myAccount
+    const isMyTurn = hasStarted && currentPlayer === myAccount
     const isInGame = myAccount === opponent || myAccount === challenger
     const gameIsOpen = !hasStarted
 
@@ -115,7 +119,7 @@ class Game extends Component {
             [styles.gameDisabled]: !isMyTurn
           })}
         >
-          {fieldArray.map((row, y) => (
+          {fields.map((row, y) => (
             <div className={styles.gameFieldRow} key={`row_${y}`}>
               {row.map((fieldState, x) => (
                 <Field x={x} y={y} disabled={!isMyTurn} onClick={this.handleClickField} state={STATES[fieldStates[fieldState]]} key={`cell_${x}`} />
@@ -137,21 +141,26 @@ export default WithContract('TicTacToe', {
   mapContractInstancesToProps: async (contractName, instance, props) => {
     const gameAddress = props.match.params.gameAddress
     if (contractName === 'TicTacToe' && instance.address === gameAddress) {
-      const field = Array(9).fill(0)
-
-      const mapVariables = ['currentTurn', 'opponent', 'challenger']
-
-      const callVars = {}
+      const mapVariables = ['gameField', 'turnCount', 'winner', 'currentPlayer', 'opponent', 'challenger']
+      console.log(instance)
+      
+      const fields = {}
       await Promise.all(mapVariables.map(async (variable) => {
-        callVars[variable] = await instance[variable]()
-      }))
+        if (typeof instance[variable] !== 'function') {
+          throw new Error(`Could not find ${variable} in Contract ${instance.constructor.name}@${instance.address}`)
+        }
+        
+        try {
+          fields[variable] = await instance[variable]()
+        } catch (e) {
+          fields[variable] = undefined
+        }
 
-      const fieldsResolvingPromises = Promise.all(field.map(async (_, index) => await instance.field(index)))
-      const fields = await fieldsResolvingPromises
-      return {
-        fields: fields.map(field => field.toString()),
-        ...callVars
-      }
+        return Promise.resolve()
+      }))
+      console.log("finish fetch")
+
+      return fields
     }
   },
   onError: (error, props) => {
