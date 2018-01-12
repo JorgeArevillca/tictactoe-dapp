@@ -4,3 +4,4 @@ build/
 .grunt
 .vscode
 yarn-error.log
+secret.json

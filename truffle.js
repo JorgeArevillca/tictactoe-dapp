@@ -1,5 +1,5 @@
 const HDWalletProvider = require('truffle-hdwallet-provider')
-const mnemonic = "***REMOVED***"
+const secret = require('./secret.json')
 
 module.exports = {
   networks: {
@@ -8,9 +8,9 @@ module.exports = {
       port: 8545,
       network_id: "*"
     },
-    // rinkeby: {
-    //   provider: new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/'),
-    //   network_id: 42,
-    // },
+    kovan: {
+      provider: () => new HDWalletProvider(secret.mnemonic, 'https://kovan.infura.io/' + secret.key),
+      network_id: 42,
+    },
   },
 };
