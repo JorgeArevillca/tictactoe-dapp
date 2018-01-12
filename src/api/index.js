@@ -23,8 +23,12 @@ export const windowLoaded = new Promise((accept, reject) => {
 })
 
 const getProvider = () => {
-  Web3.providers.HttpProvider.prototype.sendAsync = Web3.providers.HttpProvider.prototype.send
-  return new Web3.providers.HttpProvider('http://127.0.0.1:8545')
+  if (typeof window !== 'undefined' && window.web3) {
+    return window.web3.currentProvider
+  } else {
+    Web3.providers.HttpProvider.prototype.sendAsync = Web3.providers.HttpProvider.prototype.send
+    return new Web3.providers.HttpProvider('http://localhost:8545')
+  }
 }
 
 let web3Instance

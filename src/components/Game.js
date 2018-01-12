@@ -69,9 +69,11 @@ class Game extends Component {
     })
   }
 
-  componentWillUnmount() {
-    this.moveMadeListener.stop()
-    this.opponentJoinedListener.stop()
+  async componentWillUnmount() {
+    try {
+      this.moveMadeListener.stop()
+      this.opponentJoinedListener.stop()
+    } catch (e) {}
   }
 
   async handleClickField(x, y) {
@@ -141,8 +143,7 @@ class Game extends Component {
     
     return (
       <div>
-        <p>You are <code>{myAccount}</code></p>
-        <p>Your game's address is <code>{gameInstance.address}</code></p>
+        <p>This games' address is <code>{gameInstance.address}</code></p>
         {hasStarted && (
           isInGame ? (
             <p>It's {isMyTurn ? 'your' : 'your opponent\'s'} turn</p>
@@ -158,10 +159,14 @@ class Game extends Component {
           )
         )}
         {hasFinished && (
-          isInGame ? (
-            <p>{isWinner ? 'Congratulations! You won!' : 'Sorry, you lost! :('}</p>
+          hasWinner ? (
+            isInGame ? (
+              <p>{isWinner ? 'Congratulations! You won!' : 'Sorry, you lost! :('}</p>
+            ) : (
+              <p>{winner} won!</p>
+            )
           ) : (
-            <p>{winner} won!</p>
+            <p>The game tied!</p>
           )
         )}
         <div className={cn(styles.game, {

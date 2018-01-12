@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { getContract, setupContract, getAccounts } from 'api'
+import cn from 'classnames'
 
 import styles from './WithContract.scss'
 
@@ -24,19 +25,27 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
 
       this.refresh = this.refresh.bind(this)
       this.handleSelectAccount = this.handleSelectAccount.bind(this)
+      this.handleShowAccounts = this.handleShowAccounts.bind(this)
 
       this.state = {
         hasLoaded: false,
         account: undefined,
+        showAccounts: false,
       }
     }
 
-    async handleSelectAccount(e) {
+    handleSelectAccount(e) {
       e.preventDefault()
       const account = e.target.innerText
       console.log(`setting account to ${account}`)
 
-      await this.setState({ account })
+      this.setState({ account })
+    }
+
+    handleShowAccounts(e) {
+      e.preventDefault()
+
+      this.setState({ showAccounts: !this.state.showAccounts })
     }
 
     /**
@@ -230,9 +239,10 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       return (
         <div>
           <Child {...props}  />
-          {this.accounts.map((account) => (
-            <a href="#" key={account} className={styles.account} onClick={this.handleSelectAccount}>{account}</a>
+          {this.state.showAccounts && this.accounts.map((account) => (
+            <a href="#" key={account} className={cn(styles.account, { [styles.accountActive]: this.state.account === account })} onClick={this.handleSelectAccount}>{account}</a>
           ))}
+          <button type="button" className={cn(styles.showAccounts)} onClick={this.handleShowAccounts}>{this.state.showAccounts ? 'Hide Accounts' : 'Select Account'}</button>
         </div>
       )
     }
