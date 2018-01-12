@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node_modules/.bin/webpack-dev-server --hot --host 0.0.0.0 --client-log-level info --config webpack.config.js --progress",
-    "migrate": "node_modules/.bin/truffle migrate --reset",
+    "migrate": "node_modules/.bin/truffle migrate --reset --network development",
     "test": "truffle test --reset --network development",
     "build": "node_modules/.bin/webpack -p"
   },

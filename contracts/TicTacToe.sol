@@ -4,12 +4,12 @@ pragma solidity ^0.4.2;
 contract TicTacToe {
   address public opponent;
   address public challenger;
+  uint32 public gameField = uint32(0);
 
   ///@dev mapping of user address to deposit balance
   ///@dev depositBalances[0x123123123] = 1000000
   mapping (address => uint ) public depositBalances; 
 
-  uint32 public gameField = uint32(0);
 
   address public winner;
   address public currentPlayer;
@@ -24,15 +24,15 @@ contract TicTacToe {
   uint32[] winningConditions = [0x3F, 0xFC0, 0xFC000, 0x30C3, 0xC30C, 0x30C30, 0x30303, 0x3330];
 
   ///@dev EVENTS
-  event GameStarted(bool started);
-  event GameHasChallenger(bool started, address challenger);
+  event GameHasOpponent(address opponent);
+  event GameHasChallenger(address challenger);
   event MoveMade(uint32 field);
 
   ///@dev CONSTRUCTOR
   function TicTacToe(address _owner) public {
     challenger = _owner;
 
-    GameHasChallenger(true, challenger);
+    GameHasChallenger(challenger);
   }
 
   /// @dev Joins the game as msg.sender and start the game
@@ -43,7 +43,7 @@ contract TicTacToe {
     opponent = msg.sender;
     currentPlayer = opponent;
 
-    GameStarted(true);
+    GameHasOpponent(opponent);
   }
 
   /// @dev Sets the position on the field as msg.sender

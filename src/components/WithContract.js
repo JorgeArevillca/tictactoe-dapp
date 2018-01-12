@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { getContract, setupContract, getAccounts } from 'api'
 
+import styles from './WithContract.scss'
+
 /**
  * Higher-Order Component to add Contract Information to a Component. This Component will add the following props:
  * 
@@ -21,10 +23,20 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       this.deployed = {}
 
       this.refresh = this.refresh.bind(this)
+      this.handleSelectAccount = this.handleSelectAccount.bind(this)
 
       this.state = {
         hasLoaded: false,
+        account: undefined,
       }
+    }
+
+    async handleSelectAccount(e) {
+      e.preventDefault()
+      const account = e.target.innerText
+      console.log(`setting account to ${account}`)
+
+      await this.setState({ account })
     }
 
     /**
@@ -35,10 +47,8 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
     async loadContract(contractName) {
       try {
         if (!this.contracts[contractName]) {
-          console.time('load deployed')
           this.contracts[contractName] = await getContract(contractName)
           const deployedInstance = await this.contracts[contractName].deployed()
-          console.timeEnd('load deployed')
           
           if (!this.instances[contractName]) {
             this.instances[contractName] = {}
@@ -71,10 +81,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       try {
         if(!this.contracts[contractName] || !this.instances[contractName][address]) {
           console.log(`Loading Contract Instance: ${contractName}@${address}`)
-          console.time('contract load')
           await this.loadContract(contractName)
-          console.timeEnd('contract load')
-  
           // need to wrap the .at function because it's not a simple promise
           const contract = await (new Promise((resolve, reject) => {
             this.contracts[contractName].at(address).then((inst) => {
@@ -83,6 +90,9 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
               reject(err)
             })
           }))
+
+          console.log(contract)
+  
           this.instances[contractName][address] = contract  
         }
 
@@ -135,10 +145,13 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         await this.loadContract(contractNameOrNames)
       }
 
+      if (!this.state.account) {
+        this.setState({ account: this.accounts[0] })
+      }
+
       // load additional instances of contracts from prop function
       if (typeof options.loadInstances === 'function') {
         const contractNamesAndAddreses = options.loadInstances(this.props)
-        console.time('load instances')
         let loadInstancePromises = []
 
         Object.keys(contractNamesAndAddreses).forEach((contractName) => {
@@ -148,21 +161,14 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
 
           loadInstancePromises = [...loadInstancePromises, ...promises]
         })
-        console.log(loadInstancePromises)
         await Promise.all(loadInstancePromises)
-        console.timeEnd('load instances')
       }
-
-      console.time("delay")
-      //await new Promise((resolve) => setTimeout(resolve, 10000))
-      console.timeEnd("delay")
 
       // map contract instances to props
       if (typeof options.mapContractInstancesToProps === 'function') {
         let instanceMappingProps = {}
 
         let mappingPromises = []
-        console.time('map contract instances to props')
         Object.keys(this.instances).forEach((contractName) => {
           const promises = Object.keys(this.instances[contractName]).map(async (address) => {
             const changes = await options.mapContractInstancesToProps(contractName, this.instances[contractName][address], this.props)
@@ -172,12 +178,11 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
           })
           mappingPromises = [...mappingPromises, ...promises]
         })
-        console.log(mappingPromises)
         await Promise.all(mappingPromises)
 
-        console.timeEnd('map contract instances to props')
         this.instanceMappingProps = instanceMappingProps
       }
+
     }
 
     async componentDidMount() {
@@ -185,8 +190,8 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         await this.fetchContractsFromProps()
 
         this.autoReload = setInterval(() => {
-          this.fetchContractsFromProps()
-          this.forceUpdate()
+          //this.fetchContractsFromProps()
+          //this.forceUpdate()
         }, 1000)
 
         this.setState({
@@ -212,7 +217,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       }
 
       const props = {
-        accounts: this.accounts,
+        account: this.state.account,
         refresh: this.refresh,
         ...this.props,
         ...this.instanceMappingProps,
@@ -222,7 +227,14 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
       props.instances = { ...this.instances }
       props.deployed = { ...this.deployed }
 
-      return <Child {...props}  />
+      return (
+        <div>
+          <Child {...props}  />
+          {this.accounts.map((account) => (
+            <a href="#" key={account} className={styles.account} onClick={this.handleSelectAccount}>{account}</a>
+          ))}
+        </div>
+      )
     }
   }
 }

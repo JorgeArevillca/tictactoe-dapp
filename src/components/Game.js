@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import WithContract from './WithContract'
 import cn from 'classnames'
+import { startListener } from 'api'
 
 import styles from './Game.scss'
 
@@ -16,12 +17,12 @@ const convertGameFieldToArray = (gameField) => {
     [...Array(3).fill(STATES.EMPTY)], 
     [...Array(3).fill(STATES.EMPTY)],
   ]
-  console.log(gameField)
+  
   field.forEach((column, x) => {
     column.forEach((_, y) => {
       const position = (x % 3) + (y * 3)
-      const occupation = gameField >> (position * 2) | 3
-
+      const occupation = gameField >> (position * 2) & 3
+      
       if (occupation > 0) {
         field[y][x] = occupation === 1 ? STATES.CIRCLE : STATES.CROSS
       }
@@ -44,6 +45,35 @@ class Game extends Component {
     this.handleJoinGame = this.handleJoinGame.bind(this)
   }
 
+  componentDidMount() {
+    const gameAddress = this.props.match.params.gameAddress
+    const {
+      instances: {
+        TicTacToe: {
+          [gameAddress]: gameInstance
+        }
+      },
+      contracts: {
+        TicTacToe,
+      }
+    } = this.props
+    
+    this.moveMadeListener = startListener(gameInstance, 'MoveMade')
+    this.moveMadeListener.addListener((err, result) => {
+      this.props.refresh()
+    })
+
+    this.opponentJoinedListener = startListener(gameInstance, 'GameHasOpponent')
+    this.opponentJoinedListener.addListener((err, result) => {
+      this.props.refresh()
+    })
+  }
+
+  componentWillUnmount() {
+    this.moveMadeListener.stop()
+    this.opponentJoinedListener.stop()
+  }
+
   async handleClickField(x, y) {
     const gameAddress = this.props.match.params.gameAddress
     const {
@@ -55,10 +85,10 @@ class Game extends Component {
       contracts: {
         TicTacToe
       },
-      accounts,
+      account,
     } = this.props
 
-    const playerMove = await gameInstance.playerMove(x, y, { from: accounts[0]})
+    const playerMove = await gameInstance.playerMove(x, y, { from: account })
     await this.props.refresh()
   }
 
@@ -70,10 +100,10 @@ class Game extends Component {
           [gameAddress]: gameInstance
         }
       },
-      accounts,
+      account,
     } = this.props
 
-    await gameInstance.joinAndStartGame({ from: accounts[0] })
+    await gameInstance.joinAndStartGame({ from: account })
     await this.props.refresh()
   }
 
@@ -81,7 +111,7 @@ class Game extends Component {
     const gameAddress = this.props.match.params.gameAddress
     const {
       gameField,
-      accounts,
+      account,
       currentPlayer,
       opponent,
       challenger,
@@ -96,33 +126,52 @@ class Game extends Component {
 
     const fields = convertGameFieldToArray(gameField)
 
-    const hasStarted = parseInt(currentPlayer, 16) > 0
-    const fieldStates = Object.keys(STATES)
-    const myAccount = accounts[0].toLowerCase()
-    const isMyTurn = hasStarted && currentPlayer === myAccount
+    const myAccount = account.toLowerCase()
+    
     const isInGame = myAccount === opponent || myAccount === challenger
-    const gameIsOpen = !hasStarted
+    const isWinner = myAccount === winner
+    
+    const hasWinner = parseInt(winner, 16) > 0
+    const hasFinished = turnCount > 9 || hasWinner
+    const hasStarted = !hasFinished && parseInt(currentPlayer, 16) > 0
+    const hasOpponent = parseInt(opponent, 16) > 0
 
+    const isMyTurn = hasStarted && currentPlayer === myAccount
+    const isOpponentsTurn = currentPlayer === opponent
+    
     return (
       <div>
+        <p>You are <code>{myAccount}</code></p>
         <p>Your game's address is <code>{gameInstance.address}</code></p>
-        {hasStarted ? (
-          <p>{isMyTurn ? 'It\'s your turn' : 'It\'s your opponent\'s turn'}</p>
-        ) : (
+        {hasStarted && (
+          isInGame ? (
+            <p>It's {isMyTurn ? 'your' : 'your opponent\'s'} turn</p>
+          ) : (
+            <p>It's {isOpponentsTurn ? 'the opponent\'s' : 'the challenger\'s'} turn</p>
+          )
+        )}
+        {!hasStarted && !hasFinished && !hasOpponent && (
           isInGame ? (
             <p>The game has not started yet. Please wait for an opponent.</p>
           ) : (
             <p>There is no opponent. <button type="button" onClick={this.handleJoinGame}>Join as Opponent</button></p>
           )
         )}
+        {hasFinished && (
+          isInGame ? (
+            <p>{isWinner ? 'Congratulations! You won!' : 'Sorry, you lost! :('}</p>
+          ) : (
+            <p>{winner} won!</p>
+          )
+        )}
         <div className={cn(styles.game, {
-            [styles.gameDisabled]: !isMyTurn
+            [styles.gameDisabled]: !isMyTurn || hasFinished
           })}
         >
           {fields.map((row, y) => (
             <div className={styles.gameFieldRow} key={`row_${y}`}>
               {row.map((fieldState, x) => (
-                <Field x={x} y={y} disabled={!isMyTurn} onClick={this.handleClickField} state={STATES[fieldStates[fieldState]]} key={`cell_${x}`} />
+                <Field x={x} y={y} disabled={!isMyTurn} onClick={this.handleClickField} state={fieldState} key={`cell_${x}`} />
               ))}
             </div>
           ))}
@@ -142,7 +191,6 @@ export default WithContract('TicTacToe', {
     const gameAddress = props.match.params.gameAddress
     if (contractName === 'TicTacToe' && instance.address === gameAddress) {
       const mapVariables = ['gameField', 'turnCount', 'winner', 'currentPlayer', 'opponent', 'challenger']
-      console.log(instance)
       
       const fields = {}
       await Promise.all(mapVariables.map(async (variable) => {
@@ -158,7 +206,6 @@ export default WithContract('TicTacToe', {
 
         return Promise.resolve()
       }))
-      console.log("finish fetch")
 
       return fields
     }

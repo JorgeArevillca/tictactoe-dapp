@@ -1,11 +1,5 @@
 import React, { Component } from 'react'
-
-import Web3 from 'web3'
-import TC from 'truffle-contract'
-
-Web3.providers.HttpProvider.prototype.sendAsync = Web3.providers.HttpProvider.prototype.send
-const TTTF = TC(require('../../build/contracts/TicTacToeFactory.json'))
-const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
+import { getContract, waitForEventOnce } from 'api'
 
 class InjectEventListener extends Component {
   state = {
@@ -13,20 +7,10 @@ class InjectEventListener extends Component {
   }
 
   async componentWillMount() {
-    console.log('Andre is nicht sehr lame! Aber er ist viel viel geile!')
+    const TTTF = await getContract('TicTacToeFactory')
+    const factory = await TTTF.deployed()
     
-    await TTTF.setProvider(web3.currentProvider)
-    const { BroadCastTTTAddress: bcAdd } = await TTTF.deployed()
-    bcAdd().watch((err, resp) => {
-      const { args: { TTTGame } } = resp
-      const { logs } = this.state
-      if (err) throw new Error(err)
-      console.log(TTTGame)
-      
-      this.setState({
-        logs: [...logs, TTTGame]
-      })
-    })
+    //await waitForEventOnce(factory, 'BroadCastTTTAddress')
   }
   render () {
     const {children} = this.props
