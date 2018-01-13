@@ -7,7 +7,7 @@
 This is an example TicTacToe Smart-Contract Application, running fully decentralised on Kovan. As part of a [Gnosis](https://gnosis.pm) Company Developer Challenge.
 
 
-Created by [Andre](https://github.com/andre-meyer) and [David](https://github.com/w3stside)
+Created by [Andre Meyer](https://github.com/andre-meyer) and [David Sato](https://github.com/w3stside)
 
 # Features:
 - Event Listening `MoveMade`, `GameHasChallenger`, `GameHasOpponent`
@@ -16,9 +16,9 @@ Created by [Andre](https://github.com/andre-meyer) and [David](https://github.co
 - React HoC `WithContract`
 - Eventlistener API
 
-# Known Problems
+## Known Problems
 - Sometimes Metamask [forgets about Event Logging (metamask-extension/#2393)](https://github.com/MetaMask/metamask-extension/issues/2393), if this happen the application will stop updating automatically and you need to refresh your browserpage, after every turn (and your opponents turn). To fix this, restart your browser completely.
-- Starting a game is very expensive :see-no-evil:
+- Starting a game is very expensive 🙈
 
 ## To Play
 Play on github.io [andre-meyer.github.io/tictactoe-dapp](https://andre-meyer.github.io/tictactoe-dapp)

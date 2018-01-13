@@ -102,10 +102,11 @@ class Menu extends Component {
         <hr />
         {hasGames ? (
           <div>
+            <p>These games are available</p>
             {this.state.gamesAvailable.map((game) => {
               return (
                 <div className={styles.gameAvailable} key={game}>
-                  <Link to={`/${game}`}><pre>{JSON.stringify(game)}</pre></Link>
+                  <Link to={`/${game}`}><pre>{game}</pre></Link>
                 </div>
               )
             })}
