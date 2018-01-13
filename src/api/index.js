@@ -51,7 +51,6 @@ export const getContract = async (name) => {
 
   try {
     const { currentProvider } = await setupWeb3()
-    console.log(name, currentProvider)
     const csp = await contract.setProvider(currentProvider)
     
     return contract
@@ -85,7 +84,6 @@ export const getAccounts = async () => (new Promise(async (resolve, reject) => {
 }))
 
 export const waitForEventOnce = (contract, event, args = {}) => new Promise((resolve, reject) => {
-  console.log("starting watcher...")
   const watcher = contract[event](args)
   watcher.watch((err, result) => {
     if (err) {
@@ -102,15 +100,19 @@ export const startListener = (contract, event, args) => {
   const watcher = contract[event](args)
   watcher.watch((err, result) => {
     if (err) {
-      callbacks.forEach(cb => cb.apply(cb, err, null))
-    } else {
-      callbacks.forEach(cb => cb.apply(cb, null, result))
+      console.warn(`Watcher ${event} threw error:`, err)
     }
+
+    callbacks.forEach(cb => cb.call(cb, result))
   })
 
   return {
     stop: () => {
-      watcher.stopWatching()
+      try {
+        watcher.stopWatching()
+      } catch (e) {
+        // was probably already unwatched...
+      }
     },
     addListener: (cb) => {
       if (callbacks.indexOf(cb) == -1) {

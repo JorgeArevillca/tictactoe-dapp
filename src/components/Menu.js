@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router'
+import { Link } from 'react-router-dom'
+import { startListener } from 'api'
 
 import WithContract from './WithContract'
 
@@ -18,6 +20,25 @@ class Menu extends Component {
       joinAddress: '',
       gamesAvailable: [],
     }
+  }
+
+  componentDidMount() {
+    const { deployed: { TicTacToeFactory: factoryInstance } } = this.props
+    this.gameCreatedListener = startListener(factoryInstance, 'BroadCastTTTAddress')
+    this.gameCreatedListener.addListener((txReceipt) => {
+      const { args: { TTTGame } } = txReceipt
+      if (this.state.gamesAvailable.indexOf(TTTGame) === -1) {
+        this.setState({ gamesAvailable: [
+          ...this.state.gamesAvailable,
+          TTTGame
+         ]})
+        this.props.refresh()
+      }
+    })
+  }
+
+  componentWillUnmount() {
+    this.gameCreatedListener.stop()
   }
   
   handleChangeJoinAddress = (e) => {
@@ -81,13 +102,13 @@ class Menu extends Component {
         <hr />
         {hasGames ? (
           <div>
-            {/*this.state.gamesAvailable.map((game) => {
+            {this.state.gamesAvailable.map((game) => {
               return (
                 <div className={styles.gameAvailable} key={game}>
-                  <pre>{JSON.stringify(game)}</pre>
+                  <Link to={`/${game}`}><pre>{JSON.stringify(game)}</pre></Link>
                 </div>
               )
-            })*/}
+            })}
             <p><button type="button" onClick={this.handleCreateGame}>Create a new Game</button></p>
             <p>Or manually join game (by address): <input type="text" value={joinAddress || ''} onChange={this.handleChangeJoinAddress} /><button type="button" onClick={this.handleManuallyJoinGame}>Join Game</button></p>
           </div>

@@ -29,6 +29,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
 
       this.state = {
         hasLoaded: false,
+        hasErrored: false,
         account: undefined,
         showAccounts: false,
       }
@@ -37,7 +38,6 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
     handleSelectAccount(e) {
       e.preventDefault()
       const account = e.target.innerText
-      console.log(`setting account to ${account}`)
 
       this.setState({ account })
     }
@@ -58,7 +58,7 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
         if (!this.contracts[contractName]) {
           this.contracts[contractName] = await getContract(contractName)
           const deployedInstance = await this.contracts[contractName].deployed()
-          
+          console.log(`Loaded deployed contract ${contractName}`, deployedInstance)
           if (!this.instances[contractName]) {
             this.instances[contractName] = {}
           }
@@ -207,7 +207,9 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
           hasLoaded: true
         })
       } catch (e) {
-        // errored, don't interact with state, let userspace handle
+        this.setState({
+          hasErrored: true,
+        })
       }
     }
 
@@ -221,6 +223,19 @@ const WithContract = (contractNameOrNames, options = {}) => (Child) => {
     }
 
     render() {
+      if (this.state.hasErrored) {
+        return (
+          <div>
+            <p>Sorry, we couldn't start the Application.</p>
+            <p>Please ensure that...</p>
+            <ul className={styles.troubleshootList}>
+              <li>Make sure you're connected to <strong>Kovan</strong>.</li>
+              <li>You have either <a href="https://metamask.io" target="_BLANK">Metamask</a> enabled, a localhost connection or a different Web3 Provider available</li>
+            </ul>
+          </div>
+        )
+      }
+
       if (!this.state.hasLoaded) {
         return <span>Loading...</span>
       }
