@@ -1,6 +1,8 @@
 .DS_STORE
 node_modules/
 build/
+coverageEnv/
+coverage/
 .grunt
 .vscode
 yarn-error.log

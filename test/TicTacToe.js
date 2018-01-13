@@ -2,8 +2,14 @@ const TTT = artifacts.require('TicTacToe')
 const TTTF = artifacts.require('TicTacToeFactory')
 
 const waitForEvent = (contract, event, args = {}) => new Promise((resolve, reject) => {
-  contract[event](args).watch((err, res) => {
+  const timeoutTimer = setTimeout(() => {
     clearTimeout(timeoutTimer)
+    reject(new Error('Timeout'))
+  }, 1000)
+  const watcher = contract[event](args)
+  watcher.watch((err, res) => {
+    clearTimeout(timeoutTimer)
+    watcher.stopWatching()
     
     if (err) {
       reject(err)
@@ -11,25 +17,25 @@ const waitForEvent = (contract, event, args = {}) => new Promise((resolve, rejec
       resolve(res)
     }
   })
-
-  const timeoutTimer = setTimeout(() => {
-    reject(new Error('Timeout'))
-  }, 1000)
 })
 
 let tf
+let theGame
 
-contract('TicTacToe', (accounts) => {
-  const [challenger, opponent] = accounts
-
+contract('TicTacToeFactory', (accounts) => {
   it('Created TicTacToeFactory Contract', async () => {
     tf = await TTTF.deployed()
     console.log(` 
       ==> TTTFactory Address = ${await tf.address}
     `)
+    assert.isDefined(tf)
   })
 
-  let theGame
+})
+
+contract('TicTacToe', (accounts) => {
+  const [challenger, opponent] = accounts
+
   it('Creates a new Game via the Factory', async () => {
     await tf.newGame({ from: challenger })
     const { args: { TTTGame } } = await waitForEvent(tf, 'BroadCastTTTAddress')
@@ -38,6 +44,7 @@ contract('TicTacToe', (accounts) => {
       ==> Created a new Game = ${TTTGame}
     `)
     theGame = await TTT.at(TTTGame)
+    assert.isDefined(theGame)
   })
 
   it('Joins the game', async () => {
@@ -62,7 +69,7 @@ contract('TicTacToe', (accounts) => {
   })
 
   it('Can do a move at position 0, 1', async () => {
-    await theGame.playerMove(0, 1, {from: opponent})
+    const txReceipt = await theGame.playerMove(0, 1, {from: opponent})
     console.log(`
       GameField:
       |   |   |   |
@@ -72,15 +79,16 @@ contract('TicTacToe', (accounts) => {
       |   |   |   |
     `)
     const log = await waitForEvent(theGame, 'MoveMade')
+    assert.isDefined(txReceipt)
   })
 
   it('Changed the current player', async () => {
     const currentPlayer = await theGame.currentPlayer()
-    assert.equal(currentPlayer, challenger)
+    assert.equal(currentPlayer, challenger, `${currentPlayer} is the current player`)
   })
 
   it('Can do another move at position 1, 1', async () => {
-    await theGame.playerMove(1, 1, {from: challenger})
+    const txReceipt = await theGame.playerMove(1, 1, {from: challenger})
     console.log(`
       GameField:
       |   |   |   |
@@ -89,6 +97,7 @@ contract('TicTacToe', (accounts) => {
       - - - - - - -
       |   |   |   |
     `)
+    assert.isDefined(txReceipt)
   })
 
   it('Can\'t occupy a field twice', async () => {
@@ -104,7 +113,7 @@ contract('TicTacToe', (accounts) => {
   it('Doesn\'t change the activePlayer if the move failed', async () => {
     const currentPlayer = await theGame.currentPlayer()
 
-    assert.equal(currentPlayer, opponent)
+    assert.equal(currentPlayer, opponent, `${currentPlayer} is the active player`)
   })
 
   it('Can reach a winning condition', async () => {
@@ -142,7 +151,6 @@ contract('TicTacToe', (accounts) => {
     await waitForEvent(theGame, 'MoveMade')
 
     const winner = await theGame.winner()
-
-    assert.equal(winner, opponent)
+    assert.equal(winner, opponent, `${winner} won the game`)
   })
 })
