@@ -1,10 +1,10 @@
-# Decentralised TicTacToe
+# Decentralized TicTacToe
 ## [View on andre-meyer.github.io](https://andre-meyer.github.io/tictactoe-dapp)
 
 
 [![codecov](https://codecov.io/gh/andre-meyer/tictactoe-dapp/branch/master/graph/badge.svg)](https://codecov.io/gh/andre-meyer/tictactoe-dapp)
 
-This is an example TicTacToe Smart-Contract Application, running fully decentralised on Kovan. As part of a [Gnosis](https://gnosis.pm) Company Developer Challenge.
+This is an example TicTacToe Smart-Contract Application, running fully decentralized on Kovan. As part of a [Gnosis](https://gnosis.pm) Company Developer Challenge.
 
 
 Created by [Andre Meyer](https://github.com/andre-meyer) and [David Sato](https://github.com/w3stside)
@@ -17,7 +17,7 @@ Created by [Andre Meyer](https://github.com/andre-meyer) and [David Sato](https:
 - Eventlistener API
 
 ## Known Problems
-- Sometimes Metamask [forgets about Event Logging (metamask-extension/#2393)](https://github.com/MetaMask/metamask-extension/issues/2393), if this happen the application will stop updating automatically and you need to refresh your browserpage, after every turn (and your opponents turn). To fix this, restart your browser completely.
+- Sometimes Metamask [forgets about Event Logging (metamask-extension/#2393)](https://github.com/MetaMask/metamask-extension/issues/2393), if this happen the application will stop updating automatically and you need to refresh your browserpage after every turn (and your opponents turn). To fix this, restart your browser completely. If you're prompted to enter a password for metamask again, you did it right.
 - Starting a game is very expensive 🙈
 
 ## To Play
